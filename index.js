@@ -183,23 +183,32 @@
   /* istanbul ignore else */
   if (typeof module === 'object' && typeof module.exports === 'object') {
     module.exports = f (require ('sanctuary-def'),
+                        require ('sanctuary-either'),
+                        require ('sanctuary-maybe'),
+                        require ('sanctuary-pair'),
                         require ('sanctuary-show'),
                         require ('sanctuary-type-classes'),
                         require ('sanctuary-type-identifiers'));
   } else if (typeof define === 'function' && define.amd != null) {
     define (['sanctuary-def',
+             'sanctuary-either',
+             'sanctuary-maybe',
+             'sanctuary-pair',
              'sanctuary-show',
              'sanctuary-type-classes',
              'sanctuary-type-identifiers'],
             f);
   } else {
     self.sanctuary = f (self.sanctuaryDef,
+                        self.sanctuaryEither,
+                        self.sanctuaryMaybe,
+                        self.sanctuaryPair,
                         self.sanctuaryShow,
                         self.sanctuaryTypeClasses,
                         self.sanctuaryTypeIdentifiers);
   }
 
-} (function($, show, Z, type) {
+} (function($, Either, Maybe, Pair, show, Z, type) {
 
   'use strict';
 
@@ -223,6 +232,18 @@
     } (require ('.')));
     /* eslint-enable no-unused-vars */
   }
+
+  //  Left :: a -> Either a b
+  var Left = Either.Left;
+
+  //  Right :: b -> Either a b
+  var Right = Either.Right;
+
+  //  Nothing :: Maybe a
+  var Nothing = Maybe.Nothing;
+
+  //  Just :: a -> Maybe a
+  var Just = Maybe.Just;
 
   //  B :: (b -> c) -> (a -> b) -> a -> c
   function B(f) {
@@ -271,13 +292,6 @@
     };
   }
 
-  //  pair :: a -> b -> Array2 a b
-  function pair(x) {
-    return function(y) {
-      return [x, y];
-    };
-  }
-
   //  toObject :: a -> Object
   function toObject(x) {
     return x == null ? Object.create (null) : Object (x);
@@ -293,13 +307,6 @@
   //  value :: { value :: a } -> a
   function value(r) {
     return r.value;
-  }
-
-  //  readmeUrl :: String -> String
-  function readmeUrl(id) {
-    var version = '0.14.1';  // updated programmatically
-    return 'https://github.com/sanctuary-js/sanctuary/tree/v' + version +
-           '#' + id;
   }
 
   //  :: Type
@@ -322,26 +329,28 @@
   var p = $.BinaryTypeVariable ('p');
   var s = $.BinaryTypeVariable ('s');
 
-  //  eitherTypeIdent :: String
-  var eitherTypeIdent = 'sanctuary/Either';
-
   //  $Either :: Type -> Type -> Type
   var $Either = $.BinaryType
-    (eitherTypeIdent)
-    (readmeUrl ('EitherType'))
-    (typeEq (eitherTypeIdent))
+    ('sanctuary/Either')
+    ('https://github.com/sanctuary-js/sanctuary-either')
+    (typeEq ('sanctuary-either/Either@1'))
     (either (of (Array)) (K ([])))
     (either (K ([])) (of (Array)));
 
-  //  maybeTypeIdent :: String
-  var maybeTypeIdent = 'sanctuary/Maybe';
-
   //  $Maybe :: Type -> Type
   var $Maybe = $.UnaryType
-    (maybeTypeIdent)
-    (readmeUrl ('MaybeType'))
-    (typeEq (maybeTypeIdent))
+    ('sanctuary/Maybe')
+    ('https://github.com/sanctuary-js/sanctuary-maybe')
+    (typeEq ('sanctuary-maybe/Maybe@1'))
     (maybe ([]) (of (Array)));
+
+  //  $Pair :: Type -> Type -> Type
+  var $Pair = $.BinaryType
+    ('sanctuary/Pair')
+    ('https://github.com/sanctuary-js/sanctuary-pair')
+    (typeEq ('sanctuary-pair/Pair@1'))
+    (function(pair) { return [pair.fst]; })
+    (function(pair) { return [pair.snd]; });
 
   //  TypeRep :: Type -> Type
   var TypeRep = $.UnaryType
@@ -419,7 +428,8 @@
       Maybe: Maybe,
       Nothing: Nothing,
       EitherType: $Either,
-      Either: Either
+      Either: Either,
+      PairType: $Pair
     };
     (Object.keys (_)).forEach (function(name) {
       S[name] = def (name) (_[name].consts) (_[name].types) (_[name].impl);
@@ -465,6 +475,7 @@
   //. . $.NonNegativeInteger,
   //. . S.MaybeType ($.Unknown),
   //. . $.Array2 ($.Unknown) ($.Unknown),
+  //. . S.PairType ($.Unknown) ($.Unknown),
   //. . $.RegexFlags,
   //. . $.Type,
   //. . $.TypeClass,
@@ -500,7 +511,7 @@
   //.
   //. ```javascript
   //. > S.type (S.Just (42))
-  //. {namespace: Just ('sanctuary'), name: 'Maybe', version: 0}
+  //. {namespace: Just ('sanctuary-maybe'), name: 'Maybe', version: 1}
   //.
   //. > S.type ([1, 2, 3])
   //. {namespace: Nothing, name: 'Array', version: 0}
@@ -909,6 +920,9 @@
   //.
   //. > S.map (Math.sqrt) (S.Right (9))
   //. Right (3)
+  //.
+  //. > S.map (Math.sqrt) (S.Pair (99980001) (99980001))
+  //. Pair (99980001) (9999)
   //. ```
   //.
   //. Replacing `Functor f => f` with `Function x` produces the B combinator
@@ -975,6 +989,9 @@
   //. Curried version of [`Z.bimap`][].
   //.
   //. ```javascript
+  //. > S.bimap (S.toUpper) (Math.sqrt) (S.Pair ('foo') (64))
+  //. Pair ('FOO') (8)
+  //.
   //. > S.bimap (S.toUpper) (Math.sqrt) (S.Left ('foo'))
   //. Left ('FOO')
   //.
@@ -993,6 +1010,9 @@
   //. side of a Bifunctor.
   //.
   //. ```javascript
+  //. > S.mapLeft (S.toUpper) (S.Pair ('foo') (64))
+  //. Pair ('FOO') (64)
+  //.
   //. > S.mapLeft (S.toUpper) (S.Left ('foo'))
   //. Left ('FOO')
   //.
@@ -1333,7 +1353,10 @@
   //. [[1, 2, 3]]
   //.
   //. > S.join (S.Just (S.Just (1)))
-  //. S.Just (1)
+  //. Just (1)
+  //.
+  //. > S.join (S.Pair ('foo') (S.Pair ('bar') ('baz')))
+  //. Pair ('foobar') ('baz')
   //. ```
   //.
   //. Replacing `Chain m => m` with `Function x` produces the W combinator
@@ -1409,7 +1432,7 @@
   //.
   //. ```javascript
   //. > S.duplicate (S.Just (1))
-  //. S.Just (S.Just (1))
+  //. Just (Just (1))
   //.
   //. > S.duplicate ([1])
   //. [[1]]
@@ -1429,6 +1452,11 @@
   //# extract :: Comonad w => w a -> a
   //.
   //. [Type-safe][sanctuary-def] version of [`Z.extract`][].
+  //.
+  //. ```javascript
+  //. > S.extract (S.Pair ('foo') ('bar'))
+  //. 'bar'
+  //. ```
   _.extract = {
     consts: {w: [Z.Comonad]},
     types: [w (a), a],
@@ -1734,8 +1762,7 @@
   //. The Maybe type represents optional values: a value of type `Maybe a` is
   //. either a Just whose value is of type `a` or Nothing (with no value).
   //.
-  //. The Maybe type satisfies the [Ord][], [Monoid][], [Monad][],
-  //. [Alternative][], [Traversable][], and [Extend][] specifications.
+  //. The implementation is provided by [sanctuary-maybe][].
 
   //# MaybeType :: Type -> Type
   //.
@@ -1743,30 +1770,7 @@
 
   //# Maybe :: TypeRep Maybe
   //.
-  //. The [type representative][] for the Maybe type.
-  var Maybe = {prototype: _Maybe.prototype};
-
-  Maybe.prototype.constructor = Maybe;
-
-  function _Maybe(tag, value) {
-    this.isNothing = tag === 'Nothing';
-    this.isJust = tag === 'Just';
-    if (this.isJust) this.value = value;
-
-    //  Add "fantasy-land/concat" method conditionally so that Just('abc')
-    //  satisfies the requirements of Semigroup but Just(123) does not.
-    if (this.isNothing || Z.Semigroup.test (this.value)) {
-      this['fantasy-land/concat'] = Maybe$prototype$concat;
-    }
-
-    if (this.isNothing || Z.Setoid.test (this.value)) {
-      this['fantasy-land/equals'] = Maybe$prototype$equals;
-    }
-
-    if (this.isNothing || Z.Ord.test (this.value)) {
-      this['fantasy-land/lte'] = Maybe$prototype$lte;
-    }
-  }
+  //. The [type representative](#type-representatives) for the Maybe type.
 
   //# Nothing :: Maybe a
   //.
@@ -1776,7 +1780,6 @@
   //. > S.Nothing
   //. Nothing
   //. ```
-  var Nothing = new _Maybe ('Nothing');
 
   //# Just :: a -> Maybe a
   //.
@@ -1786,389 +1789,10 @@
   //. > S.Just (42)
   //. Just (42)
   //. ```
-  function Just(x) {
-    return new _Maybe ('Just', x);
-  }
   _.Just = {
     consts: {},
     types: [a, $Maybe (a)],
     impl: Just
-  };
-
-  //# Maybe.@@type :: String
-  //.
-  //. Maybe type identifier, `'sanctuary/Maybe'`.
-  Maybe['@@type'] = maybeTypeIdent;
-
-  //# Maybe.fantasy-land/empty :: () -> Maybe a
-  //.
-  //. Returns Nothing.
-  //.
-  //. It is idiomatic to use [`empty`](#empty) rather than use this function
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.empty (S.Maybe)
-  //. Nothing
-  //. ```
-  Maybe['fantasy-land/empty'] = function() { return Nothing; };
-
-  //# Maybe.fantasy-land/of :: a -> Maybe a
-  //.
-  //. Takes a value of any type and returns a Just with the given value.
-  //.
-  //. It is idiomatic to use [`of`](#of) rather than use this function
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.of (S.Maybe) (42)
-  //. Just (42)
-  //. ```
-  Maybe['fantasy-land/of'] = Just;
-
-  //# Maybe.fantasy-land/zero :: () -> Maybe a
-  //.
-  //. Returns Nothing.
-  //.
-  //. It is idiomatic to use [`zero`](#zero) rather than use this function
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.zero (S.Maybe)
-  //. Nothing
-  //. ```
-  Maybe['fantasy-land/zero'] = function() { return Nothing; };
-
-  //# Maybe#isNothing :: Maybe a ~> Boolean
-  //.
-  //. `true` if `this` is Nothing; `false` if `this` is a Just.
-  //.
-  //. ```javascript
-  //. > S.Nothing.isNothing
-  //. true
-  //.
-  //. > (S.Just (42)).isNothing
-  //. false
-  //. ```
-
-  //# Maybe#isJust :: Maybe a ~> Boolean
-  //.
-  //. `true` if `this` is a Just; `false` if `this` is Nothing.
-  //.
-  //. ```javascript
-  //. > (S.Just (42)).isJust
-  //. true
-  //.
-  //. > S.Nothing.isJust
-  //. false
-  //. ```
-
-  //# Maybe#@@show :: Maybe a ~> () -> String
-  //.
-  //. Returns the string representation of the Maybe.
-  //.
-  //. ```javascript
-  //. > S.show (S.Nothing)
-  //. 'Nothing'
-  //.
-  //. > S.show (S.Just ([1, 2, 3]))
-  //. 'Just ([1, 2, 3])'
-  //. ```
-  Maybe.prototype['@@show'] = function() {
-    return this.isJust ? 'Just (' + show (this.value) + ')' : 'Nothing';
-  };
-
-  //# Maybe#inspect :: Maybe a ~> () -> String
-  //.
-  //. Returns the string representation of the Maybe. This method is used by
-  //. `util.inspect` and the REPL to format a Maybe for display.
-  //.
-  //. See also [`Maybe#@@show`][].
-  //.
-  //. ```javascript
-  //. > S.Nothing.inspect ()
-  //. 'Nothing'
-  //.
-  //. > (S.Just ([1, 2, 3])).inspect ()
-  //. 'Just ([1, 2, 3])'
-  //. ```
-  Maybe.prototype.inspect = function() { return show (this); };
-
-  //# Maybe#fantasy-land/equals :: Setoid a => Maybe a ~> Maybe a -> Boolean
-  //.
-  //. Takes a value `m` of the same type and returns `true` if:
-  //.
-  //.   - `this` and `m` are both Nothing; or
-  //.
-  //.   - `this` and `m` are both Justs, and their values are equal according
-  //.     to [`Z.equals`][].
-  //.
-  //. It is idiomatic to use [`equals`](#equals) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.equals (S.Nothing) (S.Nothing)
-  //. true
-  //.
-  //. > S.equals (S.Just ([1, 2, 3])) (S.Just ([1, 2, 3]))
-  //. true
-  //.
-  //. > S.equals (S.Just ([1, 2, 3])) (S.Just ([3, 2, 1]))
-  //. false
-  //.
-  //. > S.equals (S.Just ([1, 2, 3])) (S.Nothing)
-  //. false
-  //. ```
-  function Maybe$prototype$equals(other) {
-    return this.isNothing ? other.isNothing
-                          : other.isJust && Z.equals (this.value, other.value);
-  }
-
-  //# Maybe#fantasy-land/lte :: Ord a => Maybe a ~> Maybe a -> Boolean
-  //.
-  //. Takes a value `m` of the same type and returns `true` if:
-  //.
-  //.   - `this` is Nothing; or
-  //.
-  //.   - `this` and `m` are both Justs and the value of `this` is less than
-  //.     or equal to the value of `m` according to [`Z.lte`][].
-  //.
-  //. It is idiomatic to use [`lte`](#lte) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.lte (S.Just (1)) (S.Nothing)
-  //. true
-  //.
-  //. > S.lte (S.Just (1)) (S.Just (0))
-  //. true
-  //.
-  //. > S.lte (S.Just (1)) (S.Just (1))
-  //. true
-  //.
-  //. > S.lte (S.Just (1)) (S.Just (2))
-  //. false
-  //. ```
-  function Maybe$prototype$lte(other) {
-    return this.isNothing || other.isJust && Z.lte (this.value, other.value);
-  }
-
-  //# Maybe#fantasy-land/concat :: Semigroup a => Maybe a ~> Maybe a -> Maybe a
-  //.
-  //. Returns the result of concatenating two Maybe values of the same type.
-  //. `a` must have a [Semigroup][].
-  //.
-  //. If `this` is Nothing and the argument is Nothing, this method returns
-  //. Nothing.
-  //.
-  //. If `this` is a Just and the argument is a Just, this method returns a
-  //. Just whose value is the result of concatenating this Just's value and
-  //. the given Just's value.
-  //.
-  //. Otherwise, this method returns the Just.
-  //.
-  //. It is idiomatic to use [`concat`](#concat) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.concat (S.Nothing) (S.Nothing)
-  //. Nothing
-  //.
-  //. > S.concat (S.Just ([1, 2, 3])) (S.Just ([4, 5, 6]))
-  //. Just ([1, 2, 3, 4, 5, 6])
-  //.
-  //. > S.concat (S.Nothing) (S.Just ([1, 2, 3]))
-  //. Just ([1, 2, 3])
-  //.
-  //. > S.concat (S.Just ([1, 2, 3])) (S.Nothing)
-  //. Just ([1, 2, 3])
-  //. ```
-  function Maybe$prototype$concat(other) {
-    return this.isNothing ?
-      other :
-      other.isNothing ? this : Just (Z.concat (this.value, other.value));
-  }
-
-  //# Maybe#fantasy-land/filter :: Maybe a ~> (a -> Boolean) -> Maybe a
-  //.
-  //. Takes a predicate and returns `this` if `this` is a Just and this Just's
-  //. value satisfies the given predicate; Nothing otherwise.
-  //.
-  //. It is idiomatic to use [`filter`](#filter) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.filter (S.odd) (S.Nothing)
-  //. Nothing
-  //.
-  //. > S.filter (S.odd) (S.Just (0))
-  //. Nothing
-  //.
-  //. > S.filter (S.odd) (S.Just (1))
-  //. Just (1)
-  //. ```
-  Maybe.prototype['fantasy-land/filter'] = function(pred) {
-    return this.isJust && pred (this.value) ? this : Nothing;
-  };
-
-  //# Maybe#fantasy-land/map :: Maybe a ~> (a -> b) -> Maybe b
-  //.
-  //. Takes a function and returns `this` if `this` is Nothing; otherwise
-  //. it returns a Just whose value is the result of applying the function
-  //. to this Just's value.
-  //.
-  //. It is idiomatic to use [`map`](#map) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.map (Math.sqrt) (S.Nothing)
-  //. Nothing
-  //.
-  //. > S.map (Math.sqrt) (S.Just (9))
-  //. Just (3)
-  //. ```
-  Maybe.prototype['fantasy-land/map'] = function(f) {
-    return this.isJust ? Just (f (this.value)) : this;
-  };
-
-  //# Maybe#fantasy-land/ap :: Maybe a ~> Maybe (a -> b) -> Maybe b
-  //.
-  //. Takes a Maybe and returns Nothing unless `this` is a Just *and* the
-  //. argument is a Just, in which case it returns a Just whose value is
-  //. the result of applying the given Just's value to this Just's value.
-  //.
-  //. It is idiomatic to use [`ap`](#ap) rather than use this method directly.
-  //.
-  //. ```javascript
-  //. > S.ap (S.Nothing) (S.Nothing)
-  //. Nothing
-  //.
-  //. > S.ap (S.Nothing) (S.Just (9))
-  //. Nothing
-  //.
-  //. > S.ap (S.Just (Math.sqrt)) (S.Nothing)
-  //. Nothing
-  //.
-  //. > S.ap (S.Just (Math.sqrt)) (S.Just (9))
-  //. Just (3)
-  //. ```
-  Maybe.prototype['fantasy-land/ap'] = function(other) {
-    return other.isJust ? Z.map (other.value, this) : other;
-  };
-
-  //# Maybe#fantasy-land/chain :: Maybe a ~> (a -> Maybe b) -> Maybe b
-  //.
-  //. Takes a function and returns `this` if `this` is Nothing; otherwise
-  //. it returns the result of applying the function to this Just's value.
-  //.
-  //. It is idiomatic to use [`chain`](#chain) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.chain (S.parseFloat) (S.Nothing)
-  //. Nothing
-  //.
-  //. > S.chain (S.parseFloat) (S.Just ('xxx'))
-  //. Nothing
-  //.
-  //. > S.chain (S.parseFloat) (S.Just ('12.34'))
-  //. Just (12.34)
-  //. ```
-  Maybe.prototype['fantasy-land/chain'] = function(f) {
-    return this.isJust ? f (this.value) : this;
-  };
-
-  //# Maybe#fantasy-land/alt :: Maybe a ~> Maybe a -> Maybe a
-  //.
-  //. Chooses between `this` and the other Maybe provided as an argument.
-  //. Returns `this` if `this` is a Just; the other Maybe otherwise.
-  //.
-  //. It is idiomatic to use [`alt`](#alt) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.alt (S.Nothing) (S.Nothing)
-  //. Nothing
-  //.
-  //. > S.alt (S.Nothing) (S.Just (1))
-  //. Just (1)
-  //.
-  //. > S.alt (S.Just (2)) (S.Nothing)
-  //. Just (2)
-  //.
-  //. > S.alt (S.Just (3)) (S.Just (4))
-  //. Just (3)
-  //. ```
-  Maybe.prototype['fantasy-land/alt'] = function(other) {
-    return this.isJust ? this : other;
-  };
-
-  //# Maybe#fantasy-land/reduce :: Maybe a ~> ((b, a) -> b, b) -> b
-  //.
-  //. Takes a function and an initial value of any type, and returns:
-  //.
-  //.   - the initial value if `this` is Nothing; otherwise
-  //.
-  //.   - the result of applying the function to the initial value and this
-  //.     Just's value.
-  //.
-  //. It is idiomatic to use [`reduce`](#reduce) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.reduce (S.curry2 (Math.pow)) (10) (S.Nothing)
-  //. 10
-  //.
-  //. > S.reduce (S.curry2 (Math.pow)) (10) (S.Just (3))
-  //. 1000
-  //. ```
-  Maybe.prototype['fantasy-land/reduce'] = function(f, x) {
-    return this.isJust ? f (x, this.value) : x;
-  };
-
-  //# Maybe#fantasy-land/traverse :: Applicative f => Maybe a ~> (TypeRep f, a -> f b) -> f (Maybe b)
-  //.
-  //. Takes the type representative of some [Applicative][] and a function
-  //. which returns a value of that Applicative, and returns:
-  //.
-  //.   - the result of applying the type representative's [`of`][] function to
-  //.     `this` if `this` is Nothing; otherwise
-  //.
-  //.   - the result of mapping [`Just`](#Just) over the result of applying the
-  //.     first function to this Just's value.
-  //.
-  //. It is idiomatic to use [`traverse`](#traverse) rather than use this
-  //. method directly.
-  //.
-  //. ```javascript
-  //. > S.traverse (Array) (S.words) (S.Nothing)
-  //. [Nothing]
-  //.
-  //. > S.traverse (Array) (S.words) (S.Just ('foo bar baz'))
-  //. [Just ('foo'), Just ('bar'), Just ('baz')]
-  //. ```
-  Maybe.prototype['fantasy-land/traverse'] = function(typeRep, f) {
-    return this.isJust ? Z.map (Just, f (this.value)) : Z.of (typeRep, this);
-  };
-
-  //# Maybe#fantasy-land/extend :: Maybe a ~> (Maybe a -> b) -> Maybe b
-  //.
-  //. Takes a function and returns `this` if `this` is Nothing; otherwise
-  //. it returns a Just whose value is the result of applying the function
-  //. to `this`.
-  //.
-  //. It is idiomatic to use [`extend`](#extend) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.extend (x => x.value + 1) (S.Nothing)
-  //. Nothing
-  //.
-  //. > S.extend (x => x.value + 1) (S.Just (42))
-  //. Just (43)
-  //. ```
-  Maybe.prototype['fantasy-land/extend'] = function(f) {
-    return this.isJust ? Just (f (this)) : this;
   };
 
   //# isNothing :: Maybe a -> Boolean
@@ -2463,8 +2087,7 @@
   //. `Either a b` is either a Left whose value is of type `a` or a Right whose
   //. value is of type `b`.
   //.
-  //. The Either type satisfies the [Ord][], [Semigroup][], [Monad][],
-  //. [Alt][], [Traversable][], [Extend][], and [Bifunctor][] specifications.
+  //. The implementation is provided by [sanctuary-either][].
 
   //# EitherType :: Type -> Type -> Type
   //.
@@ -2472,31 +2095,7 @@
 
   //# Either :: TypeRep Either
   //.
-  //. The [type representative][] for the Either type.
-  var Either = {prototype: _Either.prototype};
-
-  Either.prototype.constructor = Either;
-
-  function _Either(tag, value) {
-    this.isLeft = tag === 'Left';
-    this.isRight = tag === 'Right';
-    this.value = value;
-
-    //  Add "fantasy-land/concat" method conditionally so that Left('abc')
-    //  and Right('abc') satisfy the requirements of Semigroup but Left(123)
-    //  and Right(123) do not.
-    if (Z.Semigroup.test (this.value)) {
-      this['fantasy-land/concat'] = Either$prototype$concat;
-    }
-
-    if (Z.Setoid.test (this.value)) {
-      this['fantasy-land/equals'] = Either$prototype$equals;
-    }
-
-    if (Z.Ord.test (this.value)) {
-      this['fantasy-land/lte'] = Either$prototype$lte;
-    }
-  }
+  //. The [type representative](#type-representatives) for the Either type.
 
   //# Left :: a -> Either a b
   //.
@@ -2506,9 +2105,6 @@
   //. > S.Left ('Cannot divide by zero')
   //. Left ('Cannot divide by zero')
   //. ```
-  function Left(x) {
-    return new _Either ('Left', x);
-  }
   _.Left = {
     consts: {},
     types: [a, $Either (a) (b)],
@@ -2523,374 +2119,10 @@
   //. > S.Right (42)
   //. Right (42)
   //. ```
-  function Right(x) {
-    return new _Either ('Right', x);
-  }
   _.Right = {
     consts: {},
     types: [b, $Either (a) (b)],
     impl: Right
-  };
-
-  //# Either.@@type :: String
-  //.
-  //. Either type identifier, `'sanctuary/Either'`.
-  Either['@@type'] = eitherTypeIdent;
-
-  //# Either.fantasy-land/of :: b -> Either a b
-  //.
-  //. Takes a value of any type and returns a Right with the given value.
-  //.
-  //. It is idiomatic to use [`of`](#of) rather than use this function
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.of (S.Either) (42)
-  //. Right (42)
-  //. ```
-  Either['fantasy-land/of'] = Right;
-
-  //# Either#isLeft :: Either a b ~> Boolean
-  //.
-  //. `true` if `this` is a Left; `false` if `this` is a Right.
-  //.
-  //. ```javascript
-  //. > (S.Left ('Cannot divide by zero')).isLeft
-  //. true
-  //.
-  //. > (S.Right (42)).isLeft
-  //. false
-  //. ```
-
-  //# Either#isRight :: Either a b ~> Boolean
-  //.
-  //. `true` if `this` is a Right; `false` if `this` is a Left.
-  //.
-  //. ```javascript
-  //. > (S.Right (42)).isRight
-  //. true
-  //.
-  //. > (S.Left ('Cannot divide by zero')).isRight
-  //. false
-  //. ```
-
-  //# Either#@@show :: Either a b ~> () -> String
-  //.
-  //. Returns the string representation of the Either.
-  //.
-  //. ```javascript
-  //. > S.show (S.Left ('Cannot divide by zero'))
-  //. 'Left ("Cannot divide by zero")'
-  //.
-  //. > S.show (S.Right ([1, 2, 3]))
-  //. 'Right ([1, 2, 3])'
-  //. ```
-  Either.prototype['@@show'] = function() {
-    return (this.isLeft ? 'Left' : 'Right') + ' (' + show (this.value) + ')';
-  };
-
-  //# Either#inspect :: Either a b ~> () -> String
-  //.
-  //. Returns the string representation of the Either. This method is used by
-  //. `util.inspect` and the REPL to format a Either for display.
-  //.
-  //. See also [`Either#@@show`][].
-  //.
-  //. ```javascript
-  //. > (S.Left ('Cannot divide by zero')).inspect ()
-  //. 'Left ("Cannot divide by zero")'
-  //.
-  //. > (S.Right ([1, 2, 3])).inspect ()
-  //. 'Right ([1, 2, 3])'
-  //. ```
-  Either.prototype.inspect = function() { return show (this); };
-
-  //# Either#fantasy-land/equals :: (Setoid a, Setoid b) => Either a b ~> Either a b -> Boolean
-  //.
-  //. Takes a value `e` of the same type and returns `true` if:
-  //.
-  //.   - `this` and `e` are both Lefts or both Rights, and their values are
-  //.     equal according to [`Z.equals`][].
-  //.
-  //. It is idiomatic to use [`equals`](#equals) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.equals (S.Right ([1, 2, 3])) (S.Right ([1, 2, 3]))
-  //. true
-  //.
-  //. > S.equals (S.Right ([1, 2, 3])) (S.Left ([1, 2, 3]))
-  //. false
-  //. ```
-  function Either$prototype$equals(other) {
-    return this.isLeft === other.isLeft && Z.equals (this.value, other.value);
-  }
-
-  //# Either#fantasy-land/lte :: (Ord a, Ord b) => Either a b ~> Either a b -> Boolean
-  //.
-  //. Takes a value `e` of the same type and returns `true` if:
-  //.
-  //.   - `this` is a Left and `e` is a Right; or
-  //.
-  //.   - `this` and `e` are both Lefts or both Rights, and the value of `this`
-  //.     is less than or equal to the value of `e` according to [`Z.lte`][].
-  //.
-  //. It is idiomatic to use [`lte`](#lte) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.lte (S.Left (0)) (S.Left (0))
-  //. true
-  //.
-  //. > S.lte (S.Left (0)) (S.Left (1))
-  //. false
-  //.
-  //. > S.lte (S.Left (0)) (S.Right (0))
-  //. false
-  //.
-  //. > S.lte (S.Right (0)) (S.Left (0))
-  //. true
-  //.
-  //. > S.lte (S.Right (0)) (S.Right (0))
-  //. true
-  //.
-  //. > S.lte (S.Right (0)) (S.Right (1))
-  //. false
-  //. ```
-  function Either$prototype$lte(other) {
-    return this.isLeft === other.isLeft ?
-      Z.lte (this.value, other.value) :
-      this.isLeft;
-  }
-
-  //# Either#fantasy-land/concat :: (Semigroup a, Semigroup b) => Either a b ~> Either a b -> Either a b
-  //.
-  //. Returns the result of concatenating two Either values of the same type.
-  //. `a` must have a [Semigroup][], as must `b`.
-  //.
-  //. If `this` is a Left and the argument is a Left, this method returns a
-  //. Left whose value is the result of concatenating this Left's value and
-  //. the given Left's value.
-  //.
-  //. If `this` is a Right and the argument is a Right, this method returns a
-  //. Right whose value is the result of concatenating this Right's value and
-  //. the given Right's value.
-  //.
-  //. Otherwise, this method returns the Right.
-  //.
-  //. It is idiomatic to use [`concat`](#concat) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.concat (S.Left ('abc')) (S.Left ('def'))
-  //. Left ('abcdef')
-  //.
-  //. > S.concat (S.Right ([1, 2, 3])) (S.Right ([4, 5, 6]))
-  //. Right ([1, 2, 3, 4, 5, 6])
-  //.
-  //. > S.concat (S.Left ('abc')) (S.Right ([1, 2, 3]))
-  //. Right ([1, 2, 3])
-  //.
-  //. > S.concat (S.Right ([1, 2, 3])) (S.Left ('abc'))
-  //. Right ([1, 2, 3])
-  //. ```
-  function Either$prototype$concat(other) {
-    return this.isLeft ?
-      other.isLeft ? Left (Z.concat (this.value, other.value)) : other :
-      other.isLeft ? this : Right (Z.concat (this.value, other.value));
-  }
-
-  //# Either#fantasy-land/map :: Either a b ~> (b -> c) -> Either a c
-  //.
-  //. Takes a function and returns `this` if `this` is a Left; otherwise it
-  //. returns a Right whose value is the result of applying the function to
-  //. this Right's value.
-  //.
-  //. It is idiomatic to use [`map`](#map) rather than use this method
-  //. directly.
-  //.
-  //. See also [`Either#fantasy-land/bimap`][].
-  //.
-  //. ```javascript
-  //. > S.map (Math.sqrt) (S.Left ('Cannot divide by zero'))
-  //. Left ('Cannot divide by zero')
-  //.
-  //. > S.map (Math.sqrt) (S.Right (9))
-  //. Right (3)
-  //. ```
-  Either.prototype['fantasy-land/map'] = function(f) {
-    return this.isRight ? Right (f (this.value)) : this;
-  };
-
-  //# Either#fantasy-land/bimap :: Either a b ~> (a -> c, b -> d) -> Either c d
-  //.
-  //. Takes two functions and returns:
-  //.
-  //.   - a Left whose value is the result of applying the first function
-  //.     to this Left's value if `this` is a Left; otherwise
-  //.
-  //.   - a Right whose value is the result of applying the second function
-  //.     to this Right's value.
-  //.
-  //. Similar to [`Either#fantasy-land/map`][], but supports mapping over the
-  //. left side as well as the right side.
-  //.
-  //. It is idiomatic to use [`bimap`](#bimap) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.bimap (S.toUpper) (S.add (1)) (S.Left ('abc'))
-  //. Left ('ABC')
-  //.
-  //. > S.bimap (S.toUpper) (S.add (1)) (S.Right (42))
-  //. Right (43)
-  //. ```
-  Either.prototype['fantasy-land/bimap'] = function(f, g) {
-    return this.isLeft ? Left (f (this.value)) : Right (g (this.value));
-  };
-
-  //# Either#fantasy-land/ap :: Either a b ~> Either a (b -> c) -> Either a c
-  //.
-  //. Takes an Either and returns a Left unless `this` is a Right *and* the
-  //. argument is a Right, in which case it returns a Right whose value is
-  //. the result of applying the given Right's value to this Right's value.
-  //.
-  //. It is idiomatic to use [`ap`](#ap) rather than use this method directly.
-  //.
-  //. ```javascript
-  //. > S.ap (S.Left ('No such function')) (S.Left ('Cannot divide by zero'))
-  //. Left ('No such function')
-  //.
-  //. > S.ap (S.Left ('No such function')) (S.Right (9))
-  //. Left ('No such function')
-  //.
-  //. > S.ap (S.Right (Math.sqrt)) (S.Left ('Cannot divide by zero'))
-  //. Left ('Cannot divide by zero')
-  //.
-  //. > S.ap (S.Right (Math.sqrt)) (S.Right (9))
-  //. Right (3)
-  //. ```
-  Either.prototype['fantasy-land/ap'] = function(other) {
-    return other.isRight ? Z.map (other.value, this) : other;
-  };
-
-  //# Either#fantasy-land/chain :: Either a b ~> (b -> Either a c) -> Either a c
-  //.
-  //. Takes a function and returns `this` if `this` is a Left; otherwise
-  //. it returns the result of applying the function to this Right's value.
-  //.
-  //. It is idiomatic to use [`chain`](#chain) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > const sqrt = n =>
-  //. .   n < 0 ? S.Left ('Cannot represent square root of negative number')
-  //. .         : S.Right (Math.sqrt (n))
-  //.
-  //. > S.chain (sqrt) (S.Left ('Cannot divide by zero'))
-  //. Left ('Cannot divide by zero')
-  //.
-  //. > S.chain (sqrt) (S.Right (-1))
-  //. Left ('Cannot represent square root of negative number')
-  //.
-  //. > S.chain (sqrt) (S.Right (25))
-  //. Right (5)
-  //. ```
-  Either.prototype['fantasy-land/chain'] = function(f) {
-    return this.isRight ? f (this.value) : this;
-  };
-
-  //# Either#fantasy-land/alt :: Either a b ~> Either a b -> Either a b
-  //.
-  //. Chooses between `this` and the other Either provided as an argument.
-  //. Returns `this` if `this` is a Right; the other Either otherwise.
-  //.
-  //. It is idiomatic to use [`alt`](#alt) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.alt (S.Left ('A')) (S.Left ('B'))
-  //. Left ('B')
-  //.
-  //. > S.alt (S.Left ('C')) (S.Right (1))
-  //. Right (1)
-  //.
-  //. > S.alt (S.Right (2)) (S.Left ('D'))
-  //. Right (2)
-  //.
-  //. > S.alt (S.Right (3)) (S.Right (4))
-  //. Right (3)
-  //. ```
-  Either.prototype['fantasy-land/alt'] = function(other) {
-    return this.isRight ? this : other;
-  };
-
-  //# Either#fantasy-land/reduce :: Either a b ~> ((c, b) -> c, c) -> c
-  //.
-  //. Takes a function and an initial value of any type, and returns:
-  //.
-  //.   - the initial value if `this` is a Left; otherwise
-  //.
-  //.   - the result of applying the function to the initial value and this
-  //.     Right's value.
-  //.
-  //. It is idiomatic to use [`reduce`](#reduce) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.reduce (S.curry2 (Math.pow)) (10) (S.Left ('Cannot divide by zero'))
-  //. 10
-  //.
-  //. > S.reduce (S.curry2 (Math.pow)) (10) (S.Right (3))
-  //. 1000
-  //. ```
-  Either.prototype['fantasy-land/reduce'] = function(f, x) {
-    return this.isRight ? f (x, this.value) : x;
-  };
-
-  //# Either#fantasy-land/traverse :: Applicative f => Either a b ~> (TypeRep f, b -> f c) -> f (Either a c)
-  //.
-  //. Takes the type representative of some [Applicative][] and a function
-  //. which returns a value of that Applicative, and returns:
-  //.
-  //.   - the result of applying the type representative's [`of`][] function to
-  //.     `this` if `this` is a Left; otherwise
-  //.
-  //.   - the result of mapping [`Right`](#Right) over the result of applying
-  //.     the first function to this Right's value.
-  //.
-  //. It is idiomatic to use [`traverse`](#traverse) rather than use this
-  //. method directly.
-  //.
-  //. ```javascript
-  //. > S.traverse (Array) (S.words) (S.Left ('Request failed'))
-  //. [Left ('Request failed')]
-  //.
-  //. > S.traverse (Array) (S.words) (S.Right ('foo bar baz'))
-  //. [Right ('foo'), Right ('bar'), Right ('baz')]
-  //. ```
-  Either.prototype['fantasy-land/traverse'] = function(typeRep, f) {
-    return this.isRight ? Z.map (Right, f (this.value)) : Z.of (typeRep, this);
-  };
-
-  //# Either#fantasy-land/extend :: Either a b ~> (Either a b -> c) -> Either a c
-  //.
-  //. Takes a function and returns `this` if `this` is a Left; otherwise it
-  //. returns a Right whose value is the result of applying the function to
-  //. `this`.
-  //.
-  //. It is idiomatic to use [`extend`](#extend) rather than use this method
-  //. directly.
-  //.
-  //. ```javascript
-  //. > S.extend (x => x.value + 1) (S.Left ('Cannot divide by zero'))
-  //. Left ('Cannot divide by zero')
-  //.
-  //. > S.extend (x => x.value + 1) (S.Right (42))
-  //. Right (43)
-  //. ```
-  Either.prototype['fantasy-land/extend'] = function(f) {
-    return this.isLeft ? this : Right (f (this));
   };
 
   //# isLeft :: Either a b -> Boolean
@@ -3696,6 +2928,9 @@
   //.
   //. > S.size (S.Just ('quux'))
   //. 1
+  //.
+  //. > S.size (S.Pair ('ignored!') ('counted!'))
+  //. 1
   //. ```
   _.size = {
     consts: {f: [Z.Foldable]},
@@ -3856,7 +3091,7 @@
     impl: curry3 (Z.foldMap)
   };
 
-  //# unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
+  //# unfoldr :: (b -> Maybe (Pair a b)) -> b -> Array a
   //.
   //. Takes a function and a seed value, and returns an array generated by
   //. applying the function repeatedly. The array is initially empty. The
@@ -3869,21 +3104,21 @@
   //.     the array and the function is applied to the second element.
   //.
   //. ```javascript
-  //. > S.unfoldr (n => n < 5 ? S.Just ([n, n + 1]) : S.Nothing) (1)
+  //. > S.unfoldr (n => n < 5 ? S.Just (S.Pair (n) (n + 1)) : S.Nothing) (1)
   //. [1, 2, 3, 4]
   //. ```
   function unfoldr(f) {
     return function(x) {
       var result = [];
-      for (var m = f (x); m.isJust; m = f (m.value[1])) {
-        result.push (m.value[0]);
+      for (var m = f (x); m.isJust; m = f (m.value.snd)) {
+        result.push (m.value.fst);
       }
       return result;
     };
   }
   _.unfoldr = {
     consts: {},
-    types: [Fn (b) ($Maybe ($.Array2 (a) (b))), b, $.Array (a)],
+    types: [Fn (b) ($Maybe ($Pair (a) (b))), b, $.Array (a)],
     impl: unfoldr
   };
 
@@ -4040,7 +3275,7 @@
     impl: curry2 (Z.sortBy)
   };
 
-  //# zip :: Array a -> Array b -> Array (Array2 a b)
+  //# zip :: Array a -> Array b -> Array (Pair a b)
   //.
   //. Returns an array of pairs of corresponding elements from the given
   //. arrays. The length of the resulting array is equal to the length of
@@ -4050,15 +3285,15 @@
   //.
   //. ```javascript
   //. > S.zip (['a', 'b']) (['x', 'y', 'z'])
-  //. [['a', 'x'], ['b', 'y']]
+  //. [Pair ('a') ('x'), Pair ('b') ('y')]
   //.
   //. > S.zip ([1, 3, 5]) ([2, 4])
-  //. [[1, 2], [3, 4]]
+  //. [Pair (1) (2), Pair (3) (4)]
   //. ```
   _.zip = {
     consts: {},
-    types: [$.Array (a), $.Array (b), $.Array ($.Array2 (a) (b))],
-    impl: zipWith (pair)
+    types: [$.Array (a), $.Array (b), $.Array ($Pair (a) (b))],
+    impl: zipWith (Pair)
   };
 
   //# zipWith :: (a -> b -> c) -> Array a -> Array b -> Array c
@@ -4336,46 +3571,110 @@
     impl: values
   };
 
-  //# pairs :: StrMap a -> Array (Array2 String a)
+  //# pairs :: StrMap a -> Array (Pair String a)
   //.
   //. Returns the key–value pairs of the given string map, in arbitrary order.
   //.
   //. ```javascript
   //. > S.sort (S.pairs ({b: 2, a: 1, c: 3}))
-  //. [['a', 1], ['b', 2], ['c', 3]]
+  //. [Pair ('a') (1), Pair ('b') (2), Pair ('c') (3)]
   //. ```
   function pairs(strMap) {
-    return Z.map (function(k) { return [k, strMap[k]]; },
+    return Z.map (function(k) { return Pair (k) (strMap[k]); },
                   Object.keys (strMap));
   }
   _.pairs = {
     consts: {},
-    types: [$.StrMap (a), $.Array ($.Array2 ($.String) (a))],
+    types: [$.StrMap (a), $.Array ($Pair ($.String) (a))],
     impl: pairs
   };
 
-  //# fromPairs :: Foldable f => f (Array2 String a) -> StrMap a
+  //. ### Pair type
+  //.
+  //. The Pair type represents two-element tuples: a value of type `Pair a b`
+  //. contains a value of type `a` and a value of type `b`.
+  //.
+  //. The implementation is provided by [sanctuary-pair][].
+
+  //# PairType :: Type -> Type -> Type
+  //.
+  //. A [`BinaryType`][BinaryType] for use with [sanctuary-def][].
+
+  //# Pair :: TypeRep Pair
+  //.
+  //. The [type representative](#type-representatives) for the Pair type.
+
+  //  XXX: S.Pair is both the data constructor and the type representative?!
+  _.Pair = {
+    consts: {},
+    types: [a, b, $Pair (a) (b)],
+    impl: Pair
+  };
+
+  //# fst :: Pair a b -> a
+  //.
+  //. Returns the first value of the given Pair.
+  //.
+  //. ```javascript
+  //. > S.fst (S.Pair ('foo') (42))
+  //. 'foo'
+  //. ```
+  _.fst = {
+    consts: {},
+    types: [$Pair (a) (b), a],
+    impl: Pair.fst
+  };
+
+  //# snd :: Pair a b -> b
+  //.
+  //. Returns the second value of the given Pair.
+  //.
+  //. ```javascript
+  //. > S.snd (S.Pair ('foo') (42))
+  //. 42
+  //. ```
+  _.snd = {
+    consts: {},
+    types: [$Pair (a) (b), b],
+    impl: Pair.snd
+  };
+
+  //# swap :: Pair a b -> Pair b a
+  //.
+  //. Returns the result of swapping the values of the given Pair.
+  //.
+  //. ```javascript
+  //. > S.swap (S.Pair ('foo') (42))
+  //. Pair (42) ('foo')
+  //. ```
+  _.swap = {
+    consts: {},
+    types: [$Pair (a) (b), $Pair (b) (a)],
+    impl: Pair.swap
+  };
+
+  //# fromPairs :: Foldable f => f (Pair String a) -> StrMap a
   //.
   //. Returns a string map containing the key–value pairs specified by the
   //. given [Foldable][]. If a key appears in multiple pairs, the rightmost
   //. pair takes precedence.
   //.
   //. ```javascript
-  //. > S.fromPairs ([['a', 1], ['b', 2], ['c', 3]])
+  //. > S.fromPairs ([S.Pair ('a') (1), S.Pair ('b') (2), S.Pair ('c') (3)])
   //. {a: 1, b: 2, c: 3}
   //.
-  //. > S.fromPairs ([['x', 1], ['x', 2]])
+  //. > S.fromPairs ([S.Pair ('x') (1), S.Pair ('x') (2)])
   //. {x: 2}
   //. ```
   function fromPairs(pairs) {
     return Z.reduce (function(strMap, pair) {
-      strMap[pair[0]] = pair[1];
+      strMap[pair.fst] = pair.snd;
       return strMap;
     }, {}, pairs);
   }
   _.fromPairs = {
     consts: {f: [Z.Foldable]},
-    types: [f ($.Array2 ($.String) (a)), $.StrMap (a)],
+    types: [f ($Pair ($.String) (a)), $.StrMap (a)],
     impl: fromPairs
   };
 
@@ -4919,7 +4218,7 @@
       return withRegex (pattern, function() {
         return unfoldr (function(_) {
           return Z.map (function(ss) {
-            return [toMatch (ss), null];
+            return Pair (toMatch (ss)) (null);
           }, toMaybe (pattern.exec (s)));
         }) ([]);
       });
@@ -5198,6 +4497,7 @@
       $.NonNegativeInteger,
       $Maybe ($.Unknown),
       $.Array2 ($.Unknown) ($.Unknown),
+      $Pair ($.Unknown) ($.Unknown),
       $.RegexFlags,
       $.Type,
       $.TypeClass,
@@ -5208,6 +4508,8 @@
 
 }));
 
+//. [$.Array]:              v:sanctuary-js/sanctuary-def#Array
+//. [$.String]:             v:sanctuary-js/sanctuary-def#String
 //. [Alt]:                  v:fantasyland/fantasy-land#alt
 //. [Alternative]:          v:fantasyland/fantasy-land#alternative
 //. [Applicative]:          v:fantasyland/fantasy-land#applicative
@@ -5275,12 +4577,10 @@
 //. [iff]:                  https://en.wikipedia.org/wiki/If_and_only_if
 //. [parseInt]:             https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
 //. [sanctuary-def]:        v:sanctuary-js/sanctuary-def
+//. [sanctuary-either]:     v:sanctuary-js/sanctuary-either
+//. [sanctuary-maybe]:      v:sanctuary-js/sanctuary-maybe
+//. [sanctuary-pair]:       v:sanctuary-js/sanctuary-pair
 //. [stable sort]:          https://en.wikipedia.org/wiki/Sorting_algorithm#Stability
 //. [thrush]:               https://github.com/raganwald-deprecated/homoiconic/blob/master/2008-10-30/thrush.markdown
 //. [type identifier]:      v:sanctuary-js/sanctuary-type-identifiers
 //. [type representative]:  v:fantasyland/fantasy-land#type-representatives
-//.
-//. [`Either#@@show`]:                  #Either.prototype.@@show
-//. [`Either#fantasy-land/bimap`]:      #Either.prototype.fantasy-land/bimap
-//. [`Either#fantasy-land/map`]:        #Either.prototype.fantasy-land/map
-//. [`Maybe#@@show`]:                   #Maybe.prototype.@@show

@@ -23,6 +23,9 @@
   ],
   "dependencies": {
     "sanctuary-def": "0.17.0",
+    "sanctuary-either": "sanctuary-js/sanctuary-either#e5d2c5faf826f25c2d855c34fa4e9d944b8a6291",
+    "sanctuary-maybe": "sanctuary-js/sanctuary-maybe#4f6c4c2cdd8e0bbcf1f880dbb00b1215786002cf",
+    "sanctuary-pair": "sanctuary-js/sanctuary-pair#b0573a3ac253820eacc837a694aaf138e9ff78e7",
     "sanctuary-show": "1.0.0",
     "sanctuary-type-classes": "9.0.0",
     "sanctuary-type-identifiers": "2.0.1"

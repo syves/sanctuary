@@ -17,7 +17,10 @@ var dependencies = [
   'sanctuary-show',
   'sanctuary-type-identifiers',
   'sanctuary-type-classes',
-  'sanctuary-def'
+  'sanctuary-def',
+  'sanctuary-either',
+  'sanctuary-maybe',
+  'sanctuary-pair'
 ];
 
 eq (S.sort (dependencies))
