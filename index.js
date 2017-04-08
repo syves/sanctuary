@@ -48,18 +48,18 @@
 //. Sanctuary started as a complementary project to [Ramda][], aiming to
 //. provide some of Ramda's functionality in a "safer" way, by utilizing
 //. algebraic data structures to represent non-existent values or failures
-//. such that one does not need to perform any kind of `null`-checking.
+//. such that one does not need to perform any kind of `null` checking.
 //. For example, where `R.find(x => x === 1, [0,2,3])` would return
 //. `undefined`, `S.find(x => x === 1, [0,2,3])` returns `Nothing`
 //. (a `Maybe a` that you can `map` over safely).
 //.
-//. Sanctuary also performs stricter type-checking of the input provided to
+//. Sanctuary also performs stricter type checking of the input provided to
 //. functions, in order to inform users what exact they did wrong. For example,
 //. where `R.inc('XXX')` returns `NaN` (causing code to break further down the
 //. line), `S.inc('XXX')` throws `The value at position 1 is not a member of
 //. ‘FiniteNumber’`.
 //.
-//. At some point, the type-checking engine was moved into it's own
+//. At some point, the type-checking engine was moved into its own
 //. `sanctuary-def` project, and several other parts of Sanctuary are being
 //. moved into separate packages as well; https://github.com/sanctuary-js -
 //. The latest addition being `sanctuary-type-classes`, which started as
@@ -67,7 +67,7 @@
 //. turns out to be a great standard library for Fantasy Land (and I would say;
 //. the foundation of a sane standard library for JavaScript in general).
 //.
-//. As Sanctuary evolves, it's type-checking capabilities are improving, and
+//. As Sanctuary evolves, its type-checking capabilities are improving, and
 //. more and more functions from Ramda are covered by Sanctuary. Eventually
 //. Sanctuary will be able to operate as an independent "prelude" library,
 //. where you can choose Ramda for loosyness, or Sanctuary for strictness.
