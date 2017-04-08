@@ -58,13 +58,12 @@
 //. line), `S.inc('XXX')` throws `The value at position 1 is not a member of
 //. ‘FiniteNumber’`.
 //.
-//. At some point, the type-checking engine was moved into its own
-//. `sanctuary-def` project, and several other parts of Sanctuary are being
-//. moved into separate packages as well; https://github.com/sanctuary-js -
-//. The latest addition being `sanctuary-type-classes`, which started as
-//. definitions of type-classes to be consumed by `sanctuary-def`, but actually
-//. turns out to be a great standard library for Fantasy Land (and I would say;
-//. the foundation of a sane standard library for JavaScript in general).
+//. Whereas Ramda has no dependencies, Sanctuary has a modular design:
+//. [sanctuary-def][] provides type checking, [sanctuary-type-classes][]
+//. provides Fantasy Land functions and type classes, and [sanctuary-maybe][]
+//. and [sanctuary-either][] will soon provide the Maybe and Either data types.
+//. Not only does this approach reduce the complexity of Sanctuary itself, but
+//. it allows these components to be reused in other contexts.
 //.
 //. As Sanctuary evolves, its type-checking capabilities are improving, and
 //. more and more functions from Ramda are covered by Sanctuary. Eventually
