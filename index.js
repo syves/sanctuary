@@ -75,11 +75,6 @@
 //. Not only does this approach reduce the complexity of Sanctuary itself, but
 //. it allows these components to be reused in other contexts.
 //.
-//. As Sanctuary evolves, its type-checking capabilities are improving, and
-//. more and more functions from Ramda are covered by Sanctuary. Eventually
-//. Sanctuary will be able to operate as an independent "prelude" library,
-//. where you can choose Ramda for loosyness, or Sanctuary for strictness.
-//.
 //. ## Types
 //.
 //. Sanctuary uses Haskell-like type signatures to describe the types of
