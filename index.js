@@ -80,13 +80,6 @@
 //. Sanctuary will be able to operate as an independent "prelude" library,
 //. where you can choose Ramda for loosyness, or Sanctuary for strictness.
 //.
-//. Because Sanctuary was designed to have overlap with Ramda, it shares a
-//. lot of the same features available in `ramda-fantasy`. There have been
-//. discussion to merge `ramda-fantasy` with Sanctuary
-//. ( https://github.com/ramda/ramda-fantasy/issues/105
-//. https://github.com/ramda/ramda-fantasy/issues/139 ),
-//. but no steps in that direction have been taken yet.
-//.
 //. ## Types
 //.
 //. Sanctuary uses Haskell-like type signatures to describe the types of
