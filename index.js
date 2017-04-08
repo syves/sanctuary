@@ -54,6 +54,11 @@
 //. Sanctuary was released in January 2015 to provide total versions of
 //. a handful of Ramda's partial functions.
 //.
+//. In addition to broadening in scope in the years since its release,
+//. Sanctuary's philosophy has diverged from Ramda's in several respects.
+//.
+//. ### Invariants
+//.
 //. Sanctuary performs rigorous [type checking][] of inputs and outputs, and
 //. throws a descriptive error if a type error is encountered. This allows bugs
 //. to be caught and fixed early in the development cycle.
@@ -67,6 +72,8 @@
 //.
 //. Sanctuary can be configured to operate in garbage in, garbage out mode.
 //. Ramda cannot be configured to enforce its invariants.
+//.
+//. ### Modularity
 //.
 //. Whereas Ramda has no dependencies, Sanctuary has a modular design:
 //. [sanctuary-def][] provides type checking, [sanctuary-type-classes][]
