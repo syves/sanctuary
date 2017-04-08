@@ -49,9 +49,8 @@
 //. provide some of Ramda's functionality in a "safer" way, by utilizing
 //. algebraic data structures to represent non-existent values or failures
 //. such that one does not need to perform any kind of `null` checking.
-//. For example, where `R.find(x => x === 1, [0,2,3])` would return
-//. `undefined`, `S.find(x => x === 1, [0,2,3])` returns `Nothing`
-//. (a `Maybe a` that you can `map` over safely).
+//. For example, where `R.head([])` would return `undefined`, `S.head([])`
+//. returns `Nothing` (a `Maybe a` that you can `map` over safely).
 //.
 //. Sanctuary also performs stricter type checking of the input provided to
 //. functions, in order to inform users what exact they did wrong. For example,
