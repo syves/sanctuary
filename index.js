@@ -49,8 +49,10 @@
 //. provide some of Ramda's functionality in a "safer" way, by utilizing
 //. algebraic data structures to represent non-existent values or failures
 //. such that one does not need to perform any kind of `null` checking.
-//. For example, where `R.head([])` would return `undefined`, `S.head([])`
-//. returns `Nothing` (a `Maybe a` that you can `map` over safely).
+//. This approach was proposed in [ramda/ramda#683][] in December 2014,
+//. but was considered too much of a stretch for JavaScript programmers.
+//. Sanctuary was released in January 2015 to provide total versions of
+//. a handful of Ramda's partial functions.
 //.
 //. Sanctuary performs rigorous [type checking][] of inputs and outputs, and
 //. throws a descriptive error if a type error is encountered. This allows bugs
@@ -5294,6 +5296,7 @@
 //. [equivalence]:      https://en.wikipedia.org/wiki/Equivalence_relation
 //. [iff]:              https://en.wikipedia.org/wiki/If_and_only_if
 //. [parseInt]:         https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
+//. [ramda/ramda#683]:  https://github.com/ramda/ramda/issues/683
 //. [ramda/ramda#1413]: https://github.com/ramda/ramda/issues/1413
 //. [ramda/ramda#1419]: https://github.com/ramda/ramda/pull/1419
 //. [sanctuary-def]:    v:sanctuary-js/sanctuary-def
