@@ -52,11 +52,19 @@
 //. For example, where `R.head([])` would return `undefined`, `S.head([])`
 //. returns `Nothing` (a `Maybe a` that you can `map` over safely).
 //.
-//. Sanctuary also performs stricter type checking of the input provided to
-//. functions, in order to inform users what exact they did wrong. For example,
-//. where `R.inc('XXX')` returns `NaN` (causing code to break further down the
-//. line), `S.inc('XXX')` throws `The value at position 1 is not a member of
-//. ‘FiniteNumber’`.
+//. Sanctuary performs rigorous [type checking][] of inputs and outputs, and
+//. throws a descriptive error if a type error is encountered. This allows bugs
+//. to be caught and fixed early in the development cycle.
+//.
+//. Ramda operates on the [garbage in, garbage out][GIGO] principal. Functions
+//. are documented to take arguments of particular types, but these invariants
+//. are not enforced. The problem with this approach in a language as
+//. permissive as JavaScript is that there's no guarantee that garbage input
+//. will produce garbage output ([ramda/ramda#1413][]). Ramda performs ad hoc
+//. type checking in some such cases ([ramda/ramda#1419][]).
+//.
+//. Sanctuary can be configured to operate in garbage in, garbage out mode.
+//. Ramda cannot be configured to enforce its invariants.
 //.
 //. Whereas Ramda has no dependencies, Sanctuary has a modular design:
 //. [sanctuary-def][] provides type checking, [sanctuary-type-classes][]
@@ -5232,6 +5240,7 @@
 //. [Extend]:           v:fantasyland/fantasy-land#extend
 //. [Fantasy Land]:     v:fantasyland/fantasy-land
 //. [Foldable]:         v:fantasyland/fantasy-land#foldable
+//. [GIGO]:             https://en.wikipedia.org/wiki/Garbage_in,_garbage_out
 //. [Haskell]:          https://www.haskell.org/
 //. [Kleisli]:          https://en.wikipedia.org/wiki/Kleisli_category
 //. [Maybe]:            #maybe-type
@@ -5285,9 +5294,12 @@
 //. [equivalence]:      https://en.wikipedia.org/wiki/Equivalence_relation
 //. [iff]:              https://en.wikipedia.org/wiki/If_and_only_if
 //. [parseInt]:         https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
+//. [ramda/ramda#1413]: https://github.com/ramda/ramda/issues/1413
+//. [ramda/ramda#1419]: https://github.com/ramda/ramda/pull/1419
 //. [sanctuary-def]:    v:sanctuary-js/sanctuary-def
 //. [stable sort]:      https://en.wikipedia.org/wiki/Sorting_algorithm#Stability
 //. [thrush]:           https://github.com/raganwald-deprecated/homoiconic/blob/master/2008-10-30/thrush.markdown
+//. [type checking]:    #type-checking
 //. [type identifier]:  v:sanctuary-js/sanctuary-type-identifiers
 //.
 //. [`Either#fantasy-land/bimap`]:      #Either.prototype.fantasy-land/bimap
