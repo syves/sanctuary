@@ -45,14 +45,21 @@
 //.
 //. ## Ramda
 //.
-//. Sanctuary started as a complementary project to [Ramda][], aiming to
-//. provide some of Ramda's functionality in a "safer" way, by utilizing
-//. algebraic data structures to represent non-existent values or failures
-//. such that one does not need to perform any kind of `null` checking.
-//. This approach was proposed in [ramda/ramda#683][] in December 2014,
-//. but was considered too much of a stretch for JavaScript programmers.
-//. Sanctuary was released in January 2015 to provide total versions of
-//. a handful of Ramda's partial functions.
+//. Ramda provides a number of partial functions. These necessitate the use
+//. of guards or null checks. In order to safely use `R.head`, for example,
+//. one must ensure that the array is non-empty:
+//.
+//.     if (R.isEmpty(xs)) {
+//.       // ...
+//.     } else {
+//.       return f(R.head(xs));
+//.     }
+//.
+//. Using the Maybe type renders such guards (and null checks) unnecessary.
+//. Changing functions such as `R.head` to return Maybe values was proposed
+//. in [ramda/ramda#683][], but was considered too much of a stretch for
+//. JavaScript programmers. Sanctuary was released the following month,
+//. in January 2015, as a companion library to Ramda.
 //.
 //. In addition to broadening in scope in the years since its release,
 //. Sanctuary's philosophy has diverged from Ramda's in several respects.
