@@ -45,9 +45,11 @@
 //.
 //. ## Ramda
 //.
-//. Ramda provides a number of partial functions. These necessitate the use
-//. of guards or null checks. In order to safely use `R.head`, for example,
-//. one must ensure that the array is non-empty:
+//. [Ramda][] provides several functions which return problematic values
+//. such as `undefined`, `Infinity`, or `NaN` when applied to unsuitable
+//. inputs. These are known as [partial functions][]. Partial functions
+//. necessitate the use of guards or null checks. In order to safely use
+//. `R.head`, for example, one must ensure that the array is non-empty:
 //.
 //.     if (R.isEmpty(xs)) {
 //.       // ...
@@ -5325,6 +5327,7 @@
 //. [equivalence]:              https://en.wikipedia.org/wiki/Equivalence_relation
 //. [iff]:                      https://en.wikipedia.org/wiki/If_and_only_if
 //. [parseInt]:                 https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt
+//. [partial functions]:        https://en.wikipedia.org/wiki/Partial_function
 //. [ramda/ramda#683]:          https://github.com/ramda/ramda/issues/683
 //. [ramda/ramda#1413]:         https://github.com/ramda/ramda/issues/1413
 //. [ramda/ramda#1419]:         https://github.com/ramda/ramda/pull/1419
