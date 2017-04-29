@@ -97,8 +97,21 @@
 //.
 //. ### Variadic functions
 //.
-//. Ramda has a few variadic functions, and a few functions which take variadic
-//. functions as arguments. Sanctuary has none of either.
+//. Ramda provides several functions with take any number of arguments. These
+//. are known as [variadic functions][]. Additionally, Ramda provides several
+//. functions which take variadic functions as arguments. Although natural in
+//. a dynamically typed language, variadic functions are at odds with the type
+//. notation Ramda and Sanctuary both use, leading to some indecipherable type
+//. signatures such as this one:
+//.
+//.     R.lift :: (*... -> *...) -> ([*]... -> [*])
+//.
+//. Sanctuary has no variadic functions, nor any functions which take variadic
+//. functions as arguments. Sanctuary provides two "lift" functions, each with
+//. a helpful type signature:
+//.
+//.     S.lift2 :: Apply f => (a -> b -> c) -> f a -> f b -> f c
+//.     S.lift3 :: Apply f => (a -> b -> c -> d) -> f a -> f b -> f c -> f d
 //.
 //. ### Implicit context
 //.
@@ -5341,6 +5354,7 @@
 //. [total functions]:          https://en.wikipedia.org/wiki/Partial_function#Total_function
 //. [type checking]:            #type-checking
 //. [type identifier]:          v:sanctuary-js/sanctuary-type-identifiers
+//. [variadic functions]:       https://en.wikipedia.org/wiki/Variadic_function
 //.
 //. [`Either#fantasy-land/bimap`]:      #Either.prototype.fantasy-land/bimap
 //. [`Either#fantasy-land/map`]:        #Either.prototype.fantasy-land/map
