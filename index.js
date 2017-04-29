@@ -68,8 +68,9 @@
 //.
 //. ### Totality
 //.
-//. Every Sanctuary function is defined for every value in its domain. Ramda
-//. provides a number of partial functions.
+//. Every Sanctuary function is defined for every value which is a member of
+//. the function's input type. Such functions are known as [total functions][].
+//. Ramda, on the other hand, contains a number of [partial functions][].
 //.
 //. ### Information preservation
 //.
@@ -5337,6 +5338,7 @@
 //. [sanctuary-type-classes]:   v:sanctuary-js/sanctuary-type-classes
 //. [stable sort]:              https://en.wikipedia.org/wiki/Sorting_algorithm#Stability
 //. [thrush]:                   https://github.com/raganwald-deprecated/homoiconic/blob/master/2008-10-30/thrush.markdown
+//. [total functions]:          https://en.wikipedia.org/wiki/Partial_function#Total_function
 //. [type checking]:            #type-checking
 //. [type identifier]:          v:sanctuary-js/sanctuary-type-identifiers
 //.
