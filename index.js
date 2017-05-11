@@ -75,9 +75,9 @@
 //. ### Information preservation
 //.
 //. Certain Sanctuary functions preserve more information than their Ramda
-//. counterparts. For example, one can determine the length of `xs` from
-//. the result of `S.tail(xs)` but not from the result of `R.tail(xs)`
-//. (since `R.tail([])` evaluates to `[]`).
+//. counterparts. For example, `S.tail(['foo'])` and `S.tail([])` produce
+//. different results, whereas `R.tail(['foo'])` and `R.tail([])` produce the
+//. same result.
 //.
 //. ### Invariants
 //.
