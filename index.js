@@ -115,8 +115,9 @@
 //.
 //. ### Implicit context
 //.
-//. Ramda provides a handful of functions for working with `this`. Sanctuary
-//. provides none.
+//. Ramda provides [`R.bind`][] and [`R.invoker`][] for working with methods.
+//. Additionally, many Ramda functions use `Function#call` or `Function#apply`
+//. to preserve context. Sanctuary makes no allowances for `this`.
 //.
 //. ### Transducers
 //.
@@ -5303,6 +5304,8 @@
 //. [Traversable]:              v:fantasyland/fantasy-land#traversable
 //. [UnaryType]:                v:sanctuary-js/sanctuary-def#UnaryType
 //. [`$.test`]:                 v:sanctuary-js/sanctuary-def#test
+//. [`R.bind`]:                 http://ramdajs.com/docs/#bind
+//. [`R.invoker`]:              http://ramdajs.com/docs/#invoker
 //. [`Z.alt`]:                  v:sanctuary-js/sanctuary-type-classes#alt
 //. [`Z.ap`]:                   v:sanctuary-js/sanctuary-type-classes#ap
 //. [`Z.apFirst`]:              v:sanctuary-js/sanctuary-type-classes#apFirst
