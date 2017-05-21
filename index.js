@@ -75,9 +75,19 @@
 //. ### Information preservation
 //.
 //. Certain Sanctuary functions preserve more information than their Ramda
-//. counterparts. For example, `S.tail(['foo'])` and `S.tail([])` produce
-//. different results, whereas `R.tail(['foo'])` and `R.tail([])` produce the
-//. same result.
+//. counterparts. Examples:
+//.
+//.     |> R.tail([])                   |> S.tail([])
+//.     []                              Nothing
+//.
+//.     |> R.tail(['foo'])              |> S.tail(['foo'])
+//.     []                              Just([])
+//.
+//.     |> R.replace(/^x/, '', 'abc')   |> S.stripPrefix('x', 'abc')
+//.     'abc'                           Nothing
+//.
+//.     |> R.replace(/^x/, '', 'xabc')  |> S.stripPrefix('x', 'xabc')
+//.     'abc'                           Just('abc')
 //.
 //. ### Invariants
 //.
