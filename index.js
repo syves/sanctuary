@@ -51,10 +51,10 @@
 //. necessitate the use of guards or null checks. In order to safely use
 //. `R.head`, for example, one must ensure that the array is non-empty:
 //.
-//.     if (R.isEmpty(xs)) {
+//.     if (R.isEmpty (xs)) {
 //.       // ...
 //.     } else {
-//.       return f(R.head(xs));
+//.       return f (R.head (xs));
 //.     }
 //.
 //. Using the Maybe type renders such guards (and null checks) unnecessary.
@@ -77,17 +77,17 @@
 //. Certain Sanctuary functions preserve more information than their Ramda
 //. counterparts. Examples:
 //.
-//.     |> R.tail([])                   |> S.tail([])
-//.     []                              Nothing
+//.     |> R.tail ([])                      |> S.tail ([])
+//.     []                                  Nothing
 //.
-//.     |> R.tail(['foo'])              |> S.tail(['foo'])
-//.     []                              Just([])
+//.     |> R.tail (['foo'])                 |> S.tail (['foo'])
+//.     []                                  Just ([])
 //.
-//.     |> R.replace(/^x/, '', 'abc')   |> S.stripPrefix('x', 'abc')
-//.     'abc'                           Nothing
+//.     |> R.replace (/^x/) ('') ('abc')    |> S.stripPrefix ('x') ('abc')
+//.     'abc'                               Nothing
 //.
-//.     |> R.replace(/^x/, '', 'xabc')  |> S.stripPrefix('x', 'xabc')
-//.     'abc'                           Just('abc')
+//.     |> R.replace (/^x/) ('') ('xabc')   |> S.stripPrefix ('x') ('xabc')
+//.     'abc'                               Just ('abc')
 //.
 //. ### Invariants
 //.
